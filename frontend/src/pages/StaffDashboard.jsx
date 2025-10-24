@@ -42,6 +42,7 @@ const StaffDashboard = () => {
 
   useEffect(() => {
     fetch("http://localhost:5000/api/tasks")
+        // fetch("http://localhost:4000/api")
       .then((res) => res.json())
       .then((data) => setTasks(data))
       .catch((err) => console.log(err));

@@ -82,9 +82,20 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await API.post("/auth/login", { email, password });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      nav("/menu");
+      const { token, user } = res.data;
+
+      // Save token and user info
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Redirect based on role
+      if (user.role === "admin") {
+        nav("/admin"); // admin dashboard
+      } else if (user.role === "staff") {
+        nav("/staff"); // staff dashboard
+      } else {
+        nav("/menu"); // normal user
+      }
     } catch (err) {
       alert(err.response?.data?.message || err.message);
     }
@@ -112,6 +123,7 @@ export default function Login() {
             placeholder="Enter your email"
             className="p-3 rounded-lg bg-[#0f1b2d] border border-[#2b3b55] text-white placeholder-gray-400 
                        focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition duration-300 outline-none"
+            required
           />
         </div>
 
@@ -124,18 +136,19 @@ export default function Login() {
             type="password"
             className="p-3 rounded-lg bg-[#0f1b2d] border border-[#2b3b55] text-white placeholder-gray-400 
                        focus:ring-2 focus:ring-pink-500 focus:border-pink-400 transition duration-300 outline-none"
+            required
           />
         </div>
 
-            <button
-              type="submit"
-              className="w-full py-3 text-white font-semibold rounded-lg 
-                        bg-gradient-to-r from-[#005bea] to-[#00c6fb] 
-                        shadow-lg hover:shadow-blue-500/50 
-                        hover:scale-105 active:scale-95 transition-transform duration-300"
-            >
-              Login
-            </button>
+        <button
+          type="submit"
+          className="w-full py-3 text-white font-semibold rounded-lg 
+                    bg-gradient-to-r from-[#005bea] to-[#00c6fb] 
+                    shadow-lg hover:shadow-blue-500/50 
+                    hover:scale-105 active:scale-95 transition-transform duration-300"
+        >
+          Login
+        </button>
 
         <p className="text-center text-gray-400 mt-3">
           Don’t have an account?
@@ -150,3 +163,4 @@ export default function Login() {
     </div>
   );
 }
+

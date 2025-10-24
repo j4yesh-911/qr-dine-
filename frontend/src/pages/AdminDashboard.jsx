@@ -46,19 +46,27 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import QRCard from "../components/QRCard";
+import API from "../api/api"; // use API instance with baseURL
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/orders")
-      .then((res) => res.json())
-      .then((data) => {
-        setOrders(data);
+    const fetchOrders = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await API.get("/orders", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setOrders(res.data);
         setLoading(false);
-      })
-      .catch((err) => console.log(err));
+      } catch (err) {
+        console.log(err);
+        setLoading(false);
+      }
+    };
+    fetchOrders();
   }, []);
 
   return (
