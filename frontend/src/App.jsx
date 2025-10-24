@@ -41,6 +41,7 @@ import Cart from "./pages/Cart";
 import Payment from "./pages/Payment";
 import StaffDashboard from "./pages/StaffDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import "./index.css"
 
 
 function App() {
