@@ -53,6 +53,7 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api/api';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { User, LogOut } from "lucide-react";
 
 export default function Menu() {
   const [items, setItems] = useState([]);
@@ -60,6 +61,9 @@ export default function Menu() {
   const [params] = useSearchParams();
   const tableId = params.get('tableId') || 'unknown_table';
   const nav = useNavigate();
+
+  const [showProfile, setShowProfile] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -81,25 +85,84 @@ export default function Menu() {
     nav('/cart');
   };
 
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) setUser(storedUser);
+  }, []);
+
+  const toggleProfile = () => setShowProfile(!showProfile);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0F2027] via-[#203A43] to-[#2C5364] text-white px-6 py-10">
+    <div className="relative min-h-screen bg-gradient-to-br from-[#0F2027] via-[#203A43] to-[#2C5364] text-white px-6 py-10">
       {/* Header Section */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 relative z-20">
         <h1 className="text-3xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-pink-500 drop-shadow-lg">
           Menu — Table {tableId}
         </h1>
-        <button
-          onClick={goCart}
-          className="relative px-5 py-2 font-semibold text-white rounded-lg bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 shadow-[0_0_20px_rgba(59,130,246,0.4)] 
-                     hover:shadow-[0_0_35px_rgba(236,72,153,0.6)] hover:scale-105 active:scale-95 transition-all duration-300 overflow-hidden group"
-        >
-          <span className="absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-pink-500 opacity-0 group-hover:opacity-20 blur-lg transition-all duration-500"></span>
-          <span className="relative z-10">Cart ({cart.length})</span>
-        </button>
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={goCart}
+            className="relative px-5 py-2 font-semibold text-white rounded-lg bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 shadow-[0_0_20px_rgba(59,130,246,0.4)] 
+                      hover:shadow-[0_0_35px_rgba(236,72,153,0.6)] hover:scale-105 active:scale-95 transition-all duration-300 overflow-hidden group"
+          >
+            <span className="absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-pink-500 opacity-0 group-hover:opacity-20 blur-lg transition-all duration-500"></span>
+            <span className="relative z-10">Cart ({cart.length})</span>
+          </button>
+
+          <button
+            onClick={toggleProfile}
+            className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
+          >
+            <User size={20} className="text-cyan-300" />
+            <span className="text-sm font-semibold">
+              {user ? user.name || "Profile" : "Guest"}
+            </span>
+          </button>
+        </div>
+
+        {/* Profile Dropdown */}
+        {showProfile && (
+          <div className="absolute top-14 right-0 w-64 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 shadow-2xl z-50">
+            {user ? (
+              <>
+                <div className="pb-3 border-b border-white/10">
+                  <p className="text-indigo-300 font-semibold">{user.name}</p>
+                  <p className="text-gray-300 text-sm">{user.email}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="mt-4 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold py-2 rounded-lg hover:opacity-90 transition-all"
+                >
+                  <LogOut size={18} />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-300 mb-3 text-sm">
+                  You’re not logged in
+                </p>
+                <a
+                  href="/login"
+                  className="block text-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2 rounded-lg font-medium hover:opacity-90 transition-all"
+                >
+                  Login
+                </a>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Menu Items Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {items.map(it => (
           <div
             key={it._id}
@@ -108,7 +171,6 @@ export default function Menu() {
                        hover:scale-[1.03] transition-all duration-300"
           >
             <div className="flex flex-col gap-2">
-              {/* Image */}
               {it.image && (
                 <img
                   src={it.image}
@@ -133,7 +195,6 @@ export default function Menu() {
                 </button>
               </div>
 
-              {/* Optional: Rating, reviews, prepTime */}
               <div className="flex justify-between mt-1 text-gray-400 text-xs">
                 {it.rating && <span>⭐ {it.rating}</span>}
                 {it.reviews && <span>{it.reviews} reviews</span>}
@@ -144,7 +205,6 @@ export default function Menu() {
         ))}
       </div>
 
-      {/* Empty Menu Handling */}
       {items.length === 0 && (
         <div className="flex justify-center items-center h-64 text-gray-300 animate-pulse">
           Loading Menu...

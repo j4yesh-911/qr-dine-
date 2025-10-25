@@ -42,11 +42,14 @@ import Payment from "./pages/Payment";
 import StaffDashboard from "./pages/StaffDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Register from "./pages/Register";
+import QRGenerator from "./components/QRGenerator";
+
 import "./index.css";
 
 function App() {
   return (
     <Routes>
+      <Route path="/qrcodes" element={<QRGenerator />} />
       <Route path="/" element={<Login />} />             {/* Home/Login */}
       <Route path="/register" element={<Register />} />
       <Route path="/menu" element={<Menu />} />          {/* Menu Page */}

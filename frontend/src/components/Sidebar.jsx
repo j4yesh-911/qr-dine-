@@ -11,6 +11,7 @@ const Sidebar = ({ role = "admin" }) => {
             <li><Link to="/admin">Dashboard</Link></li>
             <li><Link to="/menu">Menu</Link></li>
             <li><Link to="/orders">Orders</Link></li>
+            <li><Link to ="/qrcodes">QR CODES</Link></li>
           </>
         ) : (
           <>
