@@ -108,9 +108,19 @@ export default function Menu() {
                        hover:scale-[1.03] transition-all duration-300"
           >
             <div className="flex flex-col gap-2">
+              {/* Image */}
+              {it.image && (
+                <img
+                  src={it.image}
+                  alt={it.name}
+                  className="rounded-xl w-full h-48 object-cover mb-2"
+                />
+              )}
+
               <h3 className="text-xl font-bold text-cyan-300">{it.name}</h3>
-              <p className="text-gray-300 text-sm leading-relaxed">{it.desc}</p>
-              <div className="mt-4 flex justify-between items-center">
+              <p className="text-gray-300 text-sm leading-relaxed">{it.description}</p>
+
+              <div className="flex justify-between items-center mt-2">
                 <span className="text-lg font-semibold text-pink-400">₹{it.price}</span>
                 <button
                   onClick={() => addToCart(it)}
@@ -121,6 +131,13 @@ export default function Menu() {
                 >
                   Add
                 </button>
+              </div>
+
+              {/* Optional: Rating, reviews, prepTime */}
+              <div className="flex justify-between mt-1 text-gray-400 text-xs">
+                {it.rating && <span>⭐ {it.rating}</span>}
+                {it.reviews && <span>{it.reviews} reviews</span>}
+                {it.prepTime && <span>{it.prepTime}</span>}
               </div>
             </div>
           </div>
