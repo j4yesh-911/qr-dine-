@@ -48,6 +48,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />             {/* Home/Login */}
+      <Route path="/login" element={<Login />} /> 
       <Route path="/register" element={<Register />} />
       <Route path="/menu" element={<Menu />} />          {/* Menu Page */}
       <Route path="/cart" element={<Cart />} />          {/* Cart Page */}
