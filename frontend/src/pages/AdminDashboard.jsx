@@ -59,6 +59,7 @@ const AdminDashboard = () => {
         const res = await API.get("/orders", {
           headers: { Authorization: `Bearer ${token}` },
         });
+         console.log(res.data); 
         setOrders(res.data);
         setLoading(false);
       } catch (err) {

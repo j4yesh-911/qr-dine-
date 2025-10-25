@@ -43,21 +43,60 @@ import StaffDashboard from "./pages/StaffDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Register from "./pages/Register";
 import QRGenerator from "./components/QRGenerator";
+import ProtectedRoute from "./components/ProtectedRoute";
+import UserOrders from "./pages/UserOrders"; // create this
 
 import "./index.css";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/qrcodes" element={<QRGenerator />} />
-      <Route path="/" element={<Login />} />             {/* Home/Login */}
-      <Route path="/register" element={<Register />} />
-      <Route path="/menu" element={<Menu />} />          {/* Menu Page */}
-      <Route path="/cart" element={<Cart />} />          {/* Cart Page */}
-      <Route path="/payment" element={<Payment />} />    {/* Payment Page */}
-      <Route path="/staff" element={<StaffDashboard />} />{/* Staff Dashboard */}
-      <Route path="/admin" element={<AdminDashboard />} />{/* Admin Dashboard */}
-    </Routes>
+   <Routes>
+  <Route path="/" element={<Login />} />
+  <Route path="/register" element={<Register />} />
+
+  <Route path="/menu" element={
+    <ProtectedRoute allowedRoles={['user', 'staff', 'admin']}>
+      <Menu />
+    </ProtectedRoute>
+  } />
+
+  <Route path="/cart" element={
+    <ProtectedRoute allowedRoles={['user']}>
+      <Cart />
+    </ProtectedRoute>
+  } />
+
+
+   <Route path="/my-orders" element={
+    <ProtectedRoute allowedRoles={['user']}>
+    <UserOrders />
+    </ProtectedRoute>
+  } />
+
+  <Route path="/payment" element={
+    <ProtectedRoute allowedRoles={['user']}>
+      <Payment />
+    </ProtectedRoute>
+  } />
+
+  <Route path="/staff" element={
+    <ProtectedRoute allowedRoles={['staff', 'admin']}>
+      <StaffDashboard />
+    </ProtectedRoute>
+  } />
+
+  <Route path="/admin" element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AdminDashboard />
+    </ProtectedRoute>
+  } />
+
+  <Route path="/qrcodes" element={
+    <ProtectedRoute allowedRoles={['admin', 'staff']}>
+      <QRGenerator />
+    </ProtectedRoute>
+  } />
+</Routes>
   );
 }
 

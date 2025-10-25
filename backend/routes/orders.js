@@ -26,10 +26,12 @@ router.post('/', authMiddleware, async (req,res) => {
 
 // staff/admin fetch orders
 router.get('/', authMiddleware, requireRole(['staff','admin']), async (req,res) => {
-  const orders = await Order.find().populate('items.item').sort({ createdAt: -1 });
+  const orders = await Order.find()
+    .populate('items.item')       // populate item details
+    .populate('placedBy', 'name email')  // populate only name & email of user
+    .sort({ createdAt: -1 });
   res.json(orders);
 });
-
 // update status (staff)
 router.patch('/:id/status', authMiddleware, requireRole(['staff','admin']), async (req,res) => {
   const { status } = req.body;
@@ -37,6 +39,18 @@ router.patch('/:id/status', authMiddleware, requireRole(['staff','admin']), asyn
   if (!allowed.includes(status)) return res.status(400).json({ message: 'Bad status' });
   const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true }).populate('items.item');
   res.json(order);
+});
+
+router.get("/user", authMiddleware, async (req, res) => {
+  try {
+    const orders = await Order.find({ placedBy: req.user._id })
+      .populate("items.item")       // populate item details
+      .sort({ createdAt: -1 });     // newest first
+    res.json(orders);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 module.exports = router;
