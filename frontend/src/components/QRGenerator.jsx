@@ -5,11 +5,11 @@ import { useNavigate } from "react-router-dom";
 export default function QRGenerator() {
   const nav = useNavigate();
 
-  // Tables to generate QR codes for
+  // Tables (just for display, all QR codes will have the same URL)
   const tables = [1, 2, 3, 4, 5];
 
-  // Use current deployed domain dynamically
-  const baseURL = window.location.origin;
+  // Single URL for all QR codes (replace with your Vercel link)
+  const qrValue = "https://qr-dine-8fol.vercel.app";
 
   return (
     <div className="flex min-h-screen bg-gray-950 text-gray-100">
@@ -34,25 +34,22 @@ export default function QRGenerator() {
 
         {/* QR Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
-          {tables.map((table) => {
-            const qrValue = `${baseURL}/menu?table=${table}`;
-            return (
-              <div
-                key={table}
-                className="bg-gray-900/60 p-6 rounded-2xl border border-gray-800 shadow-md hover:shadow-lg hover:border-gray-700 transition-all duration-300 flex flex-col items-center"
-              >
-                <div className="bg-white p-3 rounded-lg">
-                  <QRCode value={qrValue} size={160} />
-                </div>
-                <p className="mt-4 text-lg font-semibold text-gray-200">
-                  Table {table}
-                </p>
-                <p className="text-sm text-gray-500 mt-1 text-center break-all">
-                  {qrValue}
-                </p>
+          {tables.map((table) => (
+            <div
+              key={table}
+              className="bg-gray-900/60 p-6 rounded-2xl border border-gray-800 shadow-md hover:shadow-lg hover:border-gray-700 transition-all duration-300 flex flex-col items-center"
+            >
+              <div className="bg-white p-3 rounded-lg">
+                <QRCode value={qrValue} size={160} />
               </div>
-            );
-          })}
+              <p className="mt-4 text-lg font-semibold text-gray-200">
+                Table {table}
+              </p>
+              <p className="text-sm text-gray-500 mt-1 text-center break-all">
+                {qrValue}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
