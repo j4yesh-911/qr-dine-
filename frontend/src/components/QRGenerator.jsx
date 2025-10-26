@@ -7,7 +7,7 @@ export default function QRGenerator() {
   const nav = useNavigate();
 
   const tables = [1, 2, 3, 4, 5];
-  const baseURL = "https://your-deployed-site-url.com"; // change later after deploy
+  const baseURL = "hqr-dine-seven.vercel.app"; // change later after deploy
 
   return (
     <div className="flex min-h-screen bg-gray-950 text-gray-100">
