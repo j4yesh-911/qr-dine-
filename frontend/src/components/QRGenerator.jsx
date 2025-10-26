@@ -1,34 +1,57 @@
 import React from "react";
 import QRCode from "react-qr-code";
+import Sidebar from "../components/Sidebar";
+import { useNavigate } from "react-router-dom";
 
 export default function QRGenerator() {
+  const nav = useNavigate();
+
   const tables = [1, 2, 3, 4, 5];
   const baseURL = "https://your-deployed-site-url.com"; // change later after deploy
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-800 text-white p-10 flex flex-col items-center">
-      <h1 className="text-4xl font-extrabold mb-10 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-pink-500 drop-shadow-lg">
-        Table QR Codes
-      </h1>
+    <div className="flex min-h-screen bg-gray-950 text-gray-100">
+      {/* Optional sidebar on the left */}
+      {/* <Sidebar /> */}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full max-w-6xl">
-        {tables.map((table) => {
-          const qrValue = `${baseURL}/menu?table=${table}`;
-          return (
-            <div
-              key={table}
-              className="bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white/20 flex flex-col items-center transition-transform transform hover:scale-105 hover:shadow-[0_0_40px_rgba(0,255,255,0.2)]"
-            >
-              <QRCode value={qrValue} size={180} className="rounded-xl" />
-              <p className="mt-4 text-xl font-semibold text-indigo-100">
-                Table {table}
-              </p>
-              <p className="text-sm text-indigo-300 break-all text-center mt-2">
-                {qrValue}
-              </p>
-            </div>
-          );
-        })}
+      <div className="flex-1 p-8 flex flex-col items-center">
+        {/* Top bar button */}
+        <div className="w-full flex justify-end mb-8">
+          <button
+            onClick={() => nav("/admin")}
+            className="bg-gray-800 hover:bg-gray-700 text-gray-200 px-5 py-2 rounded-lg font-medium transition-colors duration-200 border border-gray-700"
+          >
+            Dashboard
+          </button>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-3xl font-bold mb-10 text-gray-100 tracking-wide">
+          Table QR Codes
+        </h1>
+
+        {/* QR Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
+          {tables.map((table) => {
+            const qrValue = `${baseURL}/menu?table=${table}`;
+            return (
+              <div
+                key={table}
+                className="bg-gray-900/60 p-6 rounded-2xl border border-gray-800 shadow-md hover:shadow-lg hover:border-gray-700 transition-all duration-300 flex flex-col items-center"
+              >
+                <div className="bg-white p-3 rounded-lg">
+                  <QRCode value={qrValue} size={160} />
+                </div>
+                <p className="mt-4 text-lg font-semibold text-gray-200">
+                  Table {table}
+                </p>
+                <p className="text-sm text-gray-500 mt-1 text-center break-all">
+                  {qrValue}
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

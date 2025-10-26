@@ -45,8 +45,8 @@ import Register from "./pages/Register";
 import QRGenerator from "./components/QRGenerator";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserOrders from "./pages/UserOrders"; // create this
-
 import "./index.css";
+import Orders from "./pages/Orders";
 
 function App() {
   return (
@@ -88,6 +88,12 @@ function App() {
   <Route path="/admin" element={
     <ProtectedRoute allowedRoles={['admin']}>
       <AdminDashboard />
+    </ProtectedRoute>
+  } />
+
+    <Route path="/orders" element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <Orders />
     </ProtectedRoute>
   } />
 

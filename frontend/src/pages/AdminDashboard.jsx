@@ -1,73 +1,46 @@
-// import React, { useEffect, useState } from "react";
-// import Navbar from "../components/Navbar";
-// import Sidebar from "../components/Sidebar";
-// import QRCard from "../components/QRCard";
-
-// const AdminDashboard = () => {
-//   const [orders, setOrders] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     // Example: fetch orders from MongoDB API
-//     fetch("http://localhost:5000/api/orders")
-//       .then((res) => res.json())
-//       .then((data) => {
-//         setOrders(data);
-//         setLoading(false);
-//       })
-//       .catch((err) => console.log(err));
-//   }, []);
-
-//   return (
-//     <div className="flex h-screen">
-//       <Sidebar />
-//       <div className="flex-1 flex flex-col">
-//         <Navbar title="Admin Dashboard" />
-//         <div className="p-6">
-//           {loading ? (
-//             <p>Loading...</p>
-//           ) : (
-//             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//               {orders.map((order, i) => (
-//                 <QRCard key={i} order={order} />
-//               ))}
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AdminDashboard;
-
-
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import QRCard from "../components/QRCard";
-import API from "../api/api"; // use API instance with baseURL
+import API from "../api/api";
 
 const AdminDashboard = () => {
-  const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.get("/admin/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsers(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
+  const updateRole = async (userId, newRole) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.put(
+        `/admin/users/${userId}/role`,
+        { role: newRole },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUsers((prev) =>
+        prev.map((u) => (u._id === userId ? res.data : u))
+      );
+      alert("Role updated successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update role");
+    }
+  };
+
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await API.get("/orders", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-         console.log(res.data); 
-        setOrders(res.data);
-        setLoading(false);
-      } catch (err) {
-        console.log(err);
-        setLoading(false);
-      }
-    };
-    fetchOrders();
+    fetchUsers();
   }, []);
 
   return (
@@ -81,15 +54,42 @@ const AdminDashboard = () => {
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {orders.map((order, i) => (
-                <div
-                  key={i}
-                  className="transform hover:scale-105 transition duration-300"
-                >
-                  <QRCard order={order} />
-                </div>
-              ))}
+            <div className="overflow-x-auto bg-gray-800 rounded-xl shadow-lg">
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-gray-700 text-gray-300">
+                  <tr>
+                    <th className="py-3 px-4">Name</th>
+                    <th className="py-3 px-4">Email</th>
+                    <th className="py-3 px-4">Role</th>
+                    <th className="py-3 px-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr
+                      key={user._id}
+                      className="border-b border-gray-700 hover:bg-gray-750 transition"
+                    >
+                      <td className="py-3 px-4">{user.name}</td>
+                      <td className="py-3 px-4">{user.email}</td>
+                      <td className="py-3 px-4 capitalize">{user.role}</td>
+                      <td className="py-3 px-4">
+                        <select
+                          value={user.role}
+                          onChange={(e) =>
+                            updateRole(user._id, e.target.value)
+                          }
+                          className="bg-gray-700 text-white p-2 rounded-md"
+                        >
+                          <option value="user">User</option>
+                          <option value="staff">Staff</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

@@ -92,9 +92,18 @@ export default function Cart() {
               <span className="text-pink-400">₹{total}</span>
             </div>
 
+
+             <button
+              onClick={()=>nav("/my-orders")}
+              className="w-70 mr-9 mt-6 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-pink-500/50 hover:-translate-y-1 transform transition-all duration-300"
+            >
+             My Orders
+            </button>
+
+
             <button
               onClick={checkout}
-              className="w-full mt-6 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-pink-500/50 hover:-translate-y-1 transform transition-all duration-300"
+              className="w-70 mt-6 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-pink-500/50 hover:-translate-y-1 transform transition-all duration-300"
             >
               Request Bill / Pay
             </button>
