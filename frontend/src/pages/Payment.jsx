@@ -49,6 +49,7 @@
 import React, { useState } from "react";
 import API from "../api/api";
 import { useNavigate } from "react-router-dom";
+import QRCode from "react-qr-code";
 
 export default function Payment() {
   const data = JSON.parse(localStorage.getItem("cart") || "{}");
@@ -58,32 +59,41 @@ export default function Payment() {
 
   const placeOrder = async () => {
     try {
+      // Prepare items for order
       const items = (data.items || []).map((i) => ({
         itemId: i._id,
         qty: i.qty,
       }));
+
+      // 1️⃣ Place the order
       const res = await API.post(
         "/orders",
         { tableId: data.tableId, items },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       const order = res.data;
+
+      // 2️⃣ Generate UPI QR for payment
       const upiRes = await API.post(
-        "/admin/generate-upi",
+        "/payment/generate-upi", // <-- updated route
         { amount: order.total },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPayQR(upiRes.data.upiString);
+
+      setPayQR(upiRes.data); // contains { upiString, qrImage }
     } catch (err) {
       alert(err.response?.data?.message || err.message);
     }
   };
 
+  // Calculate total amount
   const total = (data.items || []).reduce((s, i) => s + i.qty * i.price, 0);
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-[#0e0e10] via-[#1a1c1e] to-[#232526] text-gray-200 px-6 py-10">
       <div className="w-full max-w-md bg-[#1c1f23] border border-gray-700 rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.7)] p-8">
+        
         {/* Header */}
         <h2 className="text-3xl font-bold text-center text-gray-100 mb-6">
           Payment Summary
@@ -91,23 +101,15 @@ export default function Payment() {
 
         {/* Table Info */}
         <div className="text-sm text-gray-400 mb-4 text-center">
-          <span className="font-medium text-gray-300">Table ID:</span>{" "}
-          {data.tableId}
+          <span className="font-medium text-gray-300">Table ID:</span> {data.tableId}
         </div>
 
         {/* Item List */}
         <div className="space-y-3 border-t border-gray-700 pt-4">
           {(data.items || []).map((i) => (
-            <div
-              key={i._id}
-              className="flex justify-between text-sm text-gray-300"
-            >
-              <span>
-                {i.name} × {i.qty}
-              </span>
-              <span className="font-semibold text-gray-100">
-                ₹{i.qty * i.price}
-              </span>
+            <div key={i._id} className="flex justify-between text-sm text-gray-300">
+              <span>{i.name} × {i.qty}</span>
+              <span className="font-semibold text-gray-100">₹{i.qty * i.price}</span>
             </div>
           ))}
         </div>
@@ -118,7 +120,7 @@ export default function Payment() {
           <span>₹{total}</span>
         </div>
 
-        {/* Button */}
+        {/* Place Order Button */}
         <button
           onClick={placeOrder}
           className="w-full mt-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500
@@ -132,15 +134,17 @@ export default function Payment() {
         {/* QR Display */}
         {payQR && (
           <div className="mt-8 text-center">
-            <h3 className="text-lg font-semibold text-gray-100 mb-3">
-              Scan to Pay (UPI)
-            </h3>
-            <pre className="bg-[#111315] border border-gray-700 text-gray-300 p-4 rounded-lg text-sm overflow-x-auto shadow-inner">
-              {payQR}
-            </pre>
+            <h3 className="text-lg font-semibold text-gray-100 mb-3">Scan to Pay (UPI)</h3>
+            <div className="flex flex-col items-center">
+              {/* QR Code */}
+              <QRCode value={payQR.upiString} size={200} />
+              {/* UPI String */}
+              <p className="text-sm text-gray-400 mt-3 break-words">{payQR.upiString}</p>
+            </div>
           </div>
         )}
       </div>
     </div>
   );
 }
+
