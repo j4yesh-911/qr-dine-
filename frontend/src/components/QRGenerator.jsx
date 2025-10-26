@@ -1,17 +1,19 @@
 import React from "react";
 import QRCode from "react-qr-code";
-import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 
 export default function QRGenerator() {
   const nav = useNavigate();
 
+  // Tables to generate QR codes for
   const tables = [1, 2, 3, 4, 5];
-  const baseURL = "qr-dine-8fol.vercel.app"; // change later after deploy
+
+  // Use current deployed domain dynamically
+  const baseURL = window.location.origin;
 
   return (
     <div className="flex min-h-screen bg-gray-950 text-gray-100">
-      {/* Optional sidebar on the left */}
+      {/* Optional sidebar */}
       {/* <Sidebar /> */}
 
       <div className="flex-1 p-8 flex flex-col items-center">
