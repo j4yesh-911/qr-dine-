@@ -1,55 +1,3 @@
-// import React, {useEffect, useState} from 'react';
-// import API from '../api/api';
-// import { useSearchParams, useNavigate } from 'react-router-dom';
-
-// export default function Menu(){
-//   const [items,setItems] = useState([]);
-//   const [cart,setCart] = useState([]);
-//   const [params] = useSearchParams();
-//   const tableId = params.get('tableId') || 'unknown_table';
-//   const nav = useNavigate();
-
-//   useEffect(()=>{ (async()=>{
-//     const res = await API.get('/menu');
-//     setItems(res.data);
-//   })(); }, []);
-
-//   const addToCart = (item) => {
-//     setCart(prev => {
-//       const found = prev.find(p=>p._id===item._id);
-//       if(found) return prev.map(p=>p._id===item._id ? {...p, qty: p.qty+1} : p);
-//       return [...prev, {...item, qty:1}];
-//     });
-//   };
-
-//   const goCart = () => {
-//     localStorage.setItem('cart', JSON.stringify({ items: cart, tableId }));
-//     nav('/cart');
-//   };
-
-//   return (
-//     <div className="p-4">
-//       <div className="flex justify-between items-center mb-4">
-//         <h1 className="text-2xl">Menu — Table: {tableId}</h1>
-//         <button onClick={goCart} className="bg-green-600 text-white px-3 py-1 rounded">Cart ({cart.length})</button>
-//       </div>
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//         {items.map(it=>(
-//           <div key={it._id} className="p-4 border rounded">
-//             <h3 className="font-semibold">{it.name}</h3>
-//             <p className="text-sm">{it.desc}</p>
-//             <div className="mt-2 flex justify-between items-center">
-//               <div>₹{it.price}</div>
-//               <button onClick={()=>addToCart(it)} className="px-2 py-1 bg-blue-500 text-white rounded">Add</button>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   )
-// }
-
-
 import React, { useEffect, useState } from 'react';
 import API from '../api/api';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -64,6 +12,7 @@ export default function Menu() {
 
   const [showProfile, setShowProfile] = useState(false);
   const [user, setUser] = useState(null);
+  const [clickedItem, setClickedItem] = useState(null); // For fancy animation
 
   // Fetch menu items
   useEffect(() => {
@@ -77,13 +26,19 @@ export default function Menu() {
     })();
   }, []);
 
-  // Add item to cart
+  // Add item to cart with animation
   const addToCart = (item) => {
     setCart(prev => {
       const found = prev.find(p => p._id === item._id);
-      if (found) return prev.map(p => p._id === item._id ? { ...p, qty: p.qty + 1 } : p);
+      if (found) {
+        return prev.map(p => p._id === item._id ? { ...p, qty: p.qty + 1 } : p);
+      }
       return [...prev, { ...item, qty: 1 }];
     });
+
+    // Trigger button animation
+    setClickedItem(item._id);
+    setTimeout(() => setClickedItem(null), 800);
   };
 
   // Navigate to cart page
@@ -106,6 +61,11 @@ export default function Menu() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.href = "/";
+  };
+
+  const getQty = (id) => {
+    const item = cart.find(i => i._id === id);
+    return item ? item.qty : 0;
   };
 
   return (
@@ -170,44 +130,69 @@ export default function Menu() {
 
       {/* Menu Items Grid */}
       <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-        {items.map(it => (
-          <div
-            key={it._id}
-            className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] hover:scale-[1.03] transition-all duration-300"
-          >
-            <div className="flex flex-col gap-2">
-              {it.image && (
-                <img
-                  src={it.image}
-                  alt={it.name}
-                  className="rounded-xl w-full h-40 sm:h-48 object-cover mb-2"
-                />
-              )}
+        {items.map(it => {
+          const qty = getQty(it._id);
+          const isClicked = clickedItem === it._id;
+          return (
+            <div
+              key={it._id}
+              className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] hover:scale-[1.03] transition-all duration-300"
+            >
+              <div className="flex flex-col gap-2">
+                {it.image && (
+                  <img
+                    src={it.image}
+                    alt={it.name}
+                    className="rounded-xl w-full h-40 sm:h-48 object-cover mb-2"
+                  />
+                )}
 
-              <h3 className="text-lg sm:text-xl font-bold text-cyan-300">{it.name}</h3>
-              <p className="text-gray-300 text-sm sm:text-base leading-relaxed">{it.description}</p>
+                <h3 className="text-lg sm:text-xl font-bold text-cyan-300">{it.name}</h3>
+                <p className="text-gray-300 text-sm sm:text-base leading-relaxed">{it.description}</p>
 
-              <div className="flex justify-between items-center mt-2">
-                <span className="text-base sm:text-lg font-semibold text-pink-400">₹{it.price}</span>
-                <button
-                  onClick={() => addToCart(it)}
-                  className="px-3 py-1.5 text-sm sm:text-base font-medium rounded-md bg-gradient-to-r from-blue-600 to-cyan-500 
-                             hover:from-pink-500 hover:to-blue-600 
-                             shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] 
-                             transition-all duration-300"
-                >
-                  Add
-                </button>
-              </div>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-base sm:text-lg font-semibold text-pink-400">₹{it.price}</span>
 
-              <div className="flex flex-wrap justify-between mt-1 text-gray-400 text-xs sm:text-sm gap-1 sm:gap-2">
-                {it.rating && <span>⭐ {it.rating}</span>}
-                {it.reviews && <span>{it.reviews} reviews</span>}
-                {it.prepTime && <span>{it.prepTime}</span>}
+                  {/* ✨ Fancy Add Button */}
+                  <button
+                    onClick={() => addToCart(it)}
+                    className={`relative px-3 py-1.5 text-sm sm:text-base font-medium rounded-md 
+                                transition-all duration-300 overflow-hidden
+                                ${
+                                  isClicked
+                                    ? "bg-gradient-to-r from-emerald-500 to-600 shadow-[0_0_25px_rgba(34,197,94,0.6)] scale-110 animate-pulse"
+                                    : "bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-pink-500 hover:to-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)]"
+                                }`}
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-1">
+                      {isClicked ? (
+                        <>
+                          <span className="text-white font-semibold tracking-wide">
+                            +{qty} Added!
+                          </span>
+                        </>
+                      ) : qty > 0 ? (
+                        <>
+                          <span className="text-white">Added ({qty})</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-white">Add</span>
+                        </>
+                      )}
+                    </span>
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap justify-between mt-1 text-gray-400 text-xs sm:text-sm gap-1 sm:gap-2">
+                  {it.rating && <span>⭐ {it.rating}</span>}
+                  {it.reviews && <span>{it.reviews} reviews</span>}
+                  {it.prepTime && <span>{it.prepTime}</span>}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {items.length === 0 && (
@@ -218,4 +203,3 @@ export default function Menu() {
     </div>
   );
 }
-
