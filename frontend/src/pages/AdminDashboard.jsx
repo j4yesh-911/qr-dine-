@@ -6,6 +6,7 @@ import API from "../api/api";
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -14,9 +15,9 @@ const AdminDashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(res.data);
-      setLoading(false);
     } catch (err) {
       console.error(err);
+    } finally {
       setLoading(false);
     }
   };
@@ -45,51 +46,74 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 text-white">
-      <Sidebar />
+      {/* Sidebar */}
+      <Sidebar role="admin" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Main section */}
       <div className="flex-1 flex flex-col overflow-y-auto">
-        <Navbar title="Admin Dashboard" />
-        <div className="p-8">
+        <Navbar title="Admin Dashboard" onMenuClick={() => setSidebarOpen(true)} />
+
+        <div className="p-4 md:p-8">
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500"></div>
             </div>
+          ) : users.length === 0 ? (
+            <div className="text-center text-gray-400 mt-10">No users found.</div>
           ) : (
-            <div className="overflow-x-auto bg-gray-800 rounded-xl shadow-lg">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-gray-700 text-gray-300">
-                  <tr>
-                    <th className="py-3 px-4">Name</th>
-                    <th className="py-3 px-4">Email</th>
-                    <th className="py-3 px-4">Role</th>
-                    <th className="py-3 px-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr
-                      key={user._id}
-                      className="border-b border-gray-700 hover:bg-gray-750 transition"
-                    >
-                      <td className="py-3 px-4">{user.name}</td>
-                      <td className="py-3 px-4">{user.email}</td>
-                      <td className="py-3 px-4 capitalize">{user.role}</td>
-                      <td className="py-3 px-4">
-                        <select
-                          value={user.role}
-                          onChange={(e) =>
-                            updateRole(user._id, e.target.value)
-                          }
-                          className="bg-gray-700 text-white p-2 rounded-md"
-                        >
-                          <option value="user">User</option>
-                          <option value="staff">Staff</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </td>
+            <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+              <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="bg-gray-700 text-gray-300">
+                    <tr>
+                      <th className="py-3 px-4">Name</th>
+                      <th className="py-3 px-4">Email</th>
+                      <th className="py-3 px-4">Role</th>
+                      <th className="py-3 px-4">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user._id} className="border-b border-gray-700 hover:bg-gray-750 transition">
+                        <td className="py-3 px-4">{user.name}</td>
+                        <td className="py-3 px-4">{user.email}</td>
+                        <td className="py-3 px-4 capitalize">{user.role}</td>
+                        <td className="py-3 px-4">
+                          <select
+                            value={user.role}
+                            onChange={(e) => updateRole(user._id, e.target.value)}
+                            className="bg-gray-700 text-white p-2 rounded-md"
+                          >
+                            <option value="user">User</option>
+                            <option value="staff">Staff</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="block md:hidden divide-y divide-gray-700">
+                {users.map((user) => (
+                  <div key={user._id} className="p-4 flex flex-col gap-3 bg-gray-800 hover:bg-gray-750 transition">
+                    <div><span className="text-gray-400 text-sm">Name:</span> <div>{user.name}</div></div>
+                    <div><span className="text-gray-400 text-sm">Email:</span> <div>{user.email}</div></div>
+                    <div><span className="text-gray-400 text-sm">Role:</span> <div>{user.role}</div></div>
+                    <select
+                      value={user.role}
+                      onChange={(e) => updateRole(user._id, e.target.value)}
+                      className="bg-gray-700 text-white p-2 rounded-md"
+                    >
+                      <option value="user">User</option>
+                      <option value="staff">Staff</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

@@ -32,7 +32,6 @@
 
 // export default StaffDashboard;
 
-
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
@@ -42,6 +41,7 @@ import API from "../api/api";
 const StaffDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -51,34 +51,37 @@ const StaffDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setOrders(res.data);
-        setLoading(false);
       } catch (err) {
         console.error(err);
+      } finally {
         setLoading(false);
       }
     };
-
     fetchOrders();
   }, []);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 text-white">
-      <Sidebar role="staff" />
+      <Sidebar role="staff" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
       <div className="flex-1 flex flex-col overflow-y-auto">
-        <Navbar title="Staff Dashboard" />
-        <div className="p-8">
+        <Navbar title="Staff Dashboard" onMenuClick={() => setSidebarOpen(true)} />
+
+        <div className="p-4 md:p-8">
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500"></div>
             </div>
           ) : orders.length === 0 ? (
-            <div className="text-center text-gray-400 mt-20">
+            <div className="text-center text-gray-400 mt-20 text-sm md:text-base">
               No orders available.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {orders.map((order, i) => (
-                <QRCard key={i} order={order} isStaff={true} />
+                <div key={i} className="bg-gray-800 rounded-xl shadow-lg p-4 hover:bg-gray-750 transition-all duration-200">
+                  <QRCard order={order} isStaff={true} />
+                </div>
               ))}
             </div>
           )}

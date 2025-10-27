@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { User, LogOut, Menu } from "lucide-react"; // icons
+import { User, LogOut, Menu } from "lucide-react";
 
-export default function Navbar({ title }) {
+export default function Navbar({ title, onMenuClick }) {
   const [showProfile, setShowProfile] = useState(false);
   const [user, setUser] = useState(null);
 
-  // Fetch user data from localStorage (you can modify this if using backend auth)
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) setUser(storedUser);
@@ -16,32 +15,38 @@ export default function Navbar({ title }) {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    window.location.href = "/login"; // redirect to login
+    window.location.href = "/";
   };
 
   return (
     <div className="relative z-50 bg-gradient-to-r from-gray-900 via-indigo-900 to-gray-800 text-white px-6 py-4 shadow-lg flex justify-between items-center border-b border-white/20">
-      {/* App Title */}
-      <div className="flex items-center gap-2">
-        <Menu size={22} className="text-pink-400" />
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-pink-400 bg-clip-text text-transparent">
+      {/* Left section */}
+      <div className="flex items-center gap-3">
+        {/* ✅ Hamburger always visible now */}
+        <button
+          onClick={onMenuClick}
+          className="text-white hover:text-cyan-400 transition"
+        >
+          <Menu size={26} />
+        </button>
+
+        <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-pink-400 bg-clip-text text-transparent">
           {title || "QR Dine"}
         </h1>
       </div>
 
-      {/* Right side */}
+      {/* Right section */}
       <div className="relative">
         <button
           onClick={toggleProfile}
           className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
         >
           <User size={20} className="text-cyan-300" />
-          <span className="text-sm font-semibold">
+          <span className="text-sm font-semibold hidden sm:inline">
             {user ? user.name || "Profile" : "Guest"}
           </span>
         </button>
 
-        {/* Profile Dropdown */}
         {showProfile && (
           <div className="absolute right-0 mt-3 w-56 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 shadow-2xl">
             {user ? (
