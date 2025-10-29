@@ -72,32 +72,49 @@
 import React, { useState } from "react";
 import API from "../api/api";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import {jwtDecode} from "jwt-decode"; // ✅ Use default import, not destructured
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const nav = useNavigate();
 
+  // 🔹 Normal login
   const submit = async (e) => {
     e.preventDefault();
     try {
       const res = await API.post("/auth/login", { email, password });
       const { token, user } = res.data;
 
-      // Save token and user info
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
       // Redirect based on role
-      if (user.role === "admin") {
-        nav("/admin"); // admin dashboard
-      } else if (user.role === "staff") {
-        nav("/staff"); // staff dashboard
-      } else {
-        nav("/menu"); // normal user
-      }
+      if (user.role === "admin") nav("/admin");
+      else if (user.role === "staff") nav("/staff");
+      else nav("/menu");
     } catch (err) {
       alert(err.response?.data?.message || err.message);
+    }
+  };
+
+  // 🔹 Google login
+  const handleGoogleLogin = async (response) => {
+    try {
+      const res = await API.post("/auth/google", { token: response.credential });
+      const { token, user } = res.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      if (user.role === "admin") nav("/admin");
+      else if (user.role === "staff") nav("/staff");
+      else nav("/menu");
+    } catch (err) {
+      console.error("Google login failed:", err);
+      alert(err.response?.data?.message || "Google login failed");
     }
   };
 
@@ -150,6 +167,18 @@ export default function Login() {
           Login
         </button>
 
+        {/* Divider */}
+        <div className="flex items-center my-4">
+          <hr className="flex-grow border-gray-600" />
+          <span className="px-3 text-gray-400 text-sm">OR</span>
+          <hr className="flex-grow border-gray-600" />
+        </div>
+
+        {/* Google Login */}
+        <div className="flex justify-center">
+          <GoogleLogin onSuccess={handleGoogleLogin} onError={() => alert("Google login failed")} />
+        </div>
+
         <p className="text-center text-gray-400 mt-3">
           Don’t have an account?
           <span
@@ -163,4 +192,5 @@ export default function Login() {
     </div>
   );
 }
+
 
