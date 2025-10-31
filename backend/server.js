@@ -3,8 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const bcrypt = require("bcryptjs");
-const User = require("./models/User");
 const cookieParser = require("cookie-parser");
+const User = require("./models/User");
 
 const authRoutes = require("./routes/auth");
 const menuRoutes = require("./routes/menu");
@@ -18,17 +18,22 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Allowed frontend origins
+// ✅ Allowed frontend origins (includes localhost + all Vercel subdomains)
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://qr-dine-8fol.vercel.app",
+  /\.vercel\.app$/, // ✅ allows all your vercel deployments (preview + production)
 ];
 
 // ✅ Main CORS setup
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.some((o) =>
+          o instanceof RegExp ? o.test(origin) : o === origin
+        )
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -44,19 +49,24 @@ app.use(
 // ✅ Handle preflight requests
 app.options("*", cors());
 
-// ✅ Force correct CORS headers globally (for all responses)
+// ✅ Ensure correct CORS headers globally
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+  if (
+    origin &&
+    allowedOrigins.some((o) =>
+      o instanceof RegExp ? o.test(origin) : o === origin
+    )
+  ) {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Credentials", "true");
   }
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
 
-// ✅ Remove restrictive COOP/COEP headers (for Google OAuth)
+// ✅ Remove restrictive COOP/COEP headers (for Google OAuth, etc.)
 app.use((req, res, next) => {
   res.removeHeader("Cross-Origin-Opener-Policy");
   res.removeHeader("Cross-Origin-Embedder-Policy");
@@ -82,12 +92,14 @@ connectDB()
       await User.create({
         name: "Admin",
         email: process.env.ADMIN_EMAIL,
-        passwordHash: hash,
+        password: hash, // ✅ fixed field name (should match your schema)
         role: "admin",
       });
       console.log(`✅ Admin created: ${process.env.ADMIN_EMAIL}`);
     }
 
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    app.listen(PORT, () =>
+      console.log(`🚀 Server running on port ${PORT}`)
+    );
   })
   .catch((err) => console.error("❌ MongoDB connection failed:", err.message));
